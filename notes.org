@@ -42,6 +42,11 @@
 
 **** Switch keyboard
       Alt + Shift
+**** Add exe to startup programs
+     => Open "Run"
+     Win + R
+     => execute
+     shell:startup
 *** unix
 **** commands
 ***** script shell
