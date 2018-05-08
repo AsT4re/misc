@@ -1,0 +1,1010 @@
+* general infos
+** OS specific
+*** windows
+**** bjam options for debug symbols and inline
+     debug-symbols=on inlining=off
+**** Problèmes de path
+     Remplacer dans les paths les 'ProgramFiles (x86)' qui peuvent poser problèmes lors de la lecture, il est donc posible qu'il faille les remplacer par 'Progra~2'
+**** Problèmes IP
+     --> ipconfig /renew
+**** Change letter with cd
+     cd /d E:
+**** DLL LIB EXP
+     --> Un .dll est une librairie où sont définis les différents symboles (le code de la librairie) qui seront chargés au run du programme (statiquement au démarrage, ou dynamiquement lorsque l'on en a besoin(LoadLibrary(win), dlopen(unix))) linkant avec.
+     --> Un .lib comporte juste la liste des différents symboles définis au sein de la dll correspondante. Les programmes voulant linker avec les dll correspondantes ont besoin des .lib au linkage du binaire.
+     --> Un .exp permet de résoudre les dépendances circulaires entre 2 programmes/DLL. Un programme a besoin des symboles d'une dll qui elle même a besoin de symboles de ce programme pour fonctionner. Si l'on link le programme avec la dll, le linkage
+         ne fonctionnera pas car il n'y a pas encore de .lib correspondant à cette DLL mais un .exp comportant la liste des symboles de l'executable à exporter sera créer. A partir de ce .exp, on peut donc linker la dll avec l'executable ce qui génerera le .lib
+         correspondant à la DLL qui servira cette fois ci lors du link de l'executable avec la DLL qui fonctionnera finalement.
+**** Fixing Permission denied for deleting something on windows
+     -> Right click on C (or disk wwhere to elevate permissions for a specific user) and click 'properties'
+     -> Or Right click on the concerned file
+     -> Security
+     -> Select 'Users (<curUser>\Users)' and click on 'Edit'
+     -> Select 'Full Control'
+**** Grep on windows
+     findstr /s /n /i /p foo *
+     findstr /s /n /i /p /c:"version in package.json for" *
+     -> /s for recursive
+     -> /n for printing line numbers
+     -> /i for case insensitive
+     -> /p for ignoring files with on-printable characters
+     -> /c for using literal string with quotes
+**** Cat on windows
+     type <file>
+**** Open terminal here (right click)
+     <shift> + <right click>
+**** Copy/Paste on git bash
+     http://stackoverflow.com/questions/2304372/how-do-you-copy-and-paste-into-git-bash
+**** debug child processes VS
+     DEBUG > "Other Debug Targets" > "Child Process Debugging Settings"
+     Ensuite cocher "Enable child process debugging"
+     Ensuite on peut mettre des breakpoints qui seront hit par les deux process
+
+**** Switch keyboard
+      Alt + Shift
+*** unix
+**** commands
+***** script shell
+****** set -ef -o pipefail
+       Make the script to terminate if an error occure instead trying to continue excuting
+       Makes all errors in pipe fails...
+       https://sipb.mit.edu/doc/safe-shell/
+****** $@
+       All args passed to scripts
+****** trap <cmd> sig1 sig2...
+       Execute <cmd> if one of the signals given in args is trapped
+****** if statements
+       http://tldp.org/LDP/Bash-Beginners-Guide/html/sect_07_01.html
+***** sed
+      --> Remplace </br> par <br/> dans tous les fichiers php
+      find . -name "*.php" -exec sed -i 's/<\/br>/<br \/>/g' {} \;
+      --> En excludant des répertoires (path option)
+      find . -name "*.c*" -path .git -path build* -exec sed -i 's/win32::Message::getLastErrorMsg(0/win32::Message::getLastErrorMsg(/g' {} \;
+***** grep
+****** Exclude files
+       fgrep "fetchOne" -rniI --exclude=i18next.min.js --exclude=i18nextWT.js .
+****** Exclude directories
+       fgrep -rniI "DCTIndexInputMessage" --exclude-dir=build .
+****** Grep only for some files
+       => Exemple : grep quelque chose dans les CMakelists uniquement
+       grepCore --include "CMakeLists.txt" "systranLicence" .
+***** find
+****** find without directory
+       find . -path ./node_modules -prune -o -name "*.js"
+****** find "occurrences" in CMakelists.txt files
+       find . -name "CMakeLists.txt" -exec echo {} \; -exec grep -ni "domain_classification" {} \;
+****** put all the tr contents into a file
+       find . -name "6683ebc9-3524-4160-a0aa-9a3b36578355.json" -exec cat {} \;
+       sudo find . -regextype sed -regex "^[^SrMm]*.json" -exec cat {} \; -exec echo , \; > ../output
+****** rm folders with too many files
+       find . -name "*.toto" -exec rm {} \;
+****** other
+       find . -maxdepth 2 -mindepth 2 -name "package.json" | xargs grep winston-workers
+       find . -exec cp {} /home/lefebvre/dev/node/enterprise-server/{} \;
+***** rpath value
+      readelf -d lib.so | grep RPATH
+***** increase nb opened fd
+      => ulimit -n (limit courante)
+      => sudo su
+      => ulimit -n 65536
+***** generate UUID
+      uuidgen
+***** disable swap
+      sudo swapoff -a
+***** redirection
+      Redirige la sortie d'erreur (2) et la sortie standard (1) sur l'entrée de la commande suivante	2>&1 |
+      Redirige la sortie d'erreur et la sortie standard vers fichier	>fichier 2>&1
+      Redirige la sortie d'erreur et la sortie standard à la fin de fichier	>>fichier 2>&1
+
+***** droits utilisateur spécifique
+****** changer le owner pour un dossier
+      sudo chown -R systran: log/
+****** lister les users
+       getent passwd
+****** lister les groups
+       getent group
+***** mount volume sur linux + utilisation fstab
+      # 1 - Create dir for local path
+      # 2 - mount "VOLUME_PATH" "LOCAL_PATH_WHERE_TO_MOUNT" -o "CREDENTIALS_AND_OTHER_OPTIONS"
+      sudo mount //SSANAS01/Exchange /mnt/ssanas01/Exchange -o uid=lefebvre,credentials=/etc/cifs_ssanas01.credentials,domain=systran.local,user,sec=ntlm
+      # use of /etc/fstab -> automatically start volumes in this file at system start. Line example to add :
+      //SSANAS01/Exchange /mnt/ssanas01/Exchange    cifs uid=lefebvre,credentials=/etc/cifs_ssanas01.credentials,domain=systran.local,user,sec=ntlm
+      # monter tout ce qui est écrit dans /etc/fstab
+      sudo mount -a
+      # If umount failed because busy
+      Use fuser (sho all processes using a specific mount point)
+      => sudo fuser -c -u /media/lefebvre/HUGO
+***** clang
+****** clang install
+       (For example, installing version 3.9 on trusty (14.04))
+       => wget -O - http://apt.llvm.org/llvm-snapshot.gpg.key|sudo apt-key add -
+    => sudo apt-add-repository "deb http://apt.llvm.org/trusty/ llvm-toolchain-trusty-3.9 main"
+    => sudo apt-get update
+    => sudo apt-get install clang-3.9 lldb-3.9
+****** Compile using exported variable ASAN_SYMBOLIZER_PATH
+      export ASAN_SYMBOLIZER_PATH=/usr/lib/llvm-3.9/bin/llvm-symbolizer
+****** TSAN enabled
+      CC=/usr/bin/clang-3.9 CXX=/usr/bin/clang++-3.9 cmake -DDIR3PARTY=/home/lefebvre/dev/3rdParty -DWITH_DEBUG_TOOL_TSAN=ON -DWITH_TCMALLOC=OFF ..
+****** ASAN enabled
+      CC=/usr/bin/clang-3.9 CXX=/usr/bin/clang++-3.9 cmake -DDIR3PARTY=/home/lefebvre/dev/3rdParty -DWITH_DEBUG_TOOL_TSAN=OFF -DWITH_DEBUG_TOOL_ASAN=ON -DWITH_TCMALLOC=OFF ..
+***** vagrant: expand disk + partition for centos (with lvm)
+      --> Expand disque VM vagrant
+      // Clone the vmdk to vdi because resizing can only be done on vdi
+      --> VBoxManage clonehd /home/lefebvre/VirtualBox\ VMs/vagrant_default_1419432672551_22424/packer-centos-6.5-x86_64-disk1.vmdk out.vdi --format VDI
+      --> mv out.vdi /home/lefebvre/VirtualBox\ VMs/vagrant_default_1419432672551_22424/vagrant-hdd.vdi
+      // resize VDI
+      --> VBoxManage modifyhd /home/lefebvre/VirtualBox\ VMs/vagrant_default_1419432672551_22424/vagrant-hdd.vdi --resize 80000
+      // Attach new main disk to VM
+      --> VBoxManage storageattach vagrant_default_1419432672551_22424 --storagectl "IDE Controller" --device 0 --port 0 --type hdd --medium /home/lefebvre/VirtualBox\ VMs/vagrant_default_1419432672551_22424/vagrant-hdd.vdi
+      // Show info in order to see if all has succeedeed
+      --> VBoxManage showvminfo vagrant_default_1419432672551_22424
+      --> rm /home/lefebvre/VirtualBox\ VMs/vagrant_default_1419432672551_22424/packer-centos-6.5-x86_64-disk1.vmdk
+    --> Use this tuto https://www.rootusers.com/how-to-increase-the-size-of-a-linux-lvm-by-adding-a-new-disk/ (cfdisk can be use instead of fdisk (interface en plus))
+***** svn
+****** remove unknown files
+       svn status | grep "^?" | cut -c 2- | xargs rm -rf
+****** add bin files (has to be forced)
+       svn add lmdb; svn add ldmb/*/lib/*
+****** revert local modifications
+       svn revert -R .
+****** récupérer un seul fichier sous versionning
+       -> svn co <PATH> --depth empty
+       -> svn up <FILE>
+****** log the n lasts commits in chronological order
+       svn log -l n -r HEAD:1
+****** diffs
+******* Between 2 versions
+        svn diff -r 98200:98949 indexer/src/dct-index-input-message
+        via redmine -> http://redmine/projects/systran-factory/repository/diff/core/trunk?rev=105298&rev_to=105297
+******* Between a version and the working copy
+        svn diff -r 98949 indexer/src/dct-index-input-message.cc
+
+****** commit avce message intégré + support \n
+       svn ci -m $'MESSAGE\nMESSAGE'
+
+***** git
+****** Remove a worktree
+          rm -rf du répertoire worktree
+          git worktree prune
+****** cherry-pick a merge commit
+       => 1 pour 'parent 1' ou 2 pour 'parent 2' (regarder ordre parent dans props commit)
+       git cherry-pick e6156eb4e25dabdd4044d6d9f247989f3d95e367 -m 1
+****** retrouver ancêtre comun entre 2 commits/branches
+       git merge-base c1 c2
+****** show un fichier correspondant à une révision particulière
+       git show c7f0640178398d30e6f0a27098c29fb41987b947:CorpusManager2/src/cm/RequestHandler.cpp
+****** git submodules
+       => Init with last updates
+       git submodule update --init
+****** Merge (remet l'origin au niveau local de ma branche (fake merge))
+       git merge remotes/origin/trs -s ours
+****** Diff between 2 branches
+       git diff trs-backup..trs
+****** Status des différentes branches
+       git branch -avv
+****** Force a branch of a remote to a specific commit
+       git push <upstream> +<commit>:<branch>
+****** Log commits with modified files
+       git log --name-status
+****** resolve conflicts (using kdiff3)
+       git mergetool
+****** make a patch from stash and apply elsewhere
+       git stash show stash@{1} -p > disable_licence_check.patch
+       git apply <path-to-patch>/disable_licence_check.patch
+****** git commit amend
+       git commit --amend
+****** git blame over multiple files
+       for file in $(git ls-files); do git blame $file | grep "Jean Lorieux"; done
+****** add ssh passphrase to agent
+       eval $(ssh-agent)
+       ssh-add
+****** Show in gitk all dangling(not referenced by any branch/tag) commits
+       (See: http://stackoverflow.com/questions/89332/how-to-recover-a-dropped-stash-in-git)
+       gitk --all $( git fsck --no-reflog | awk '/dangling commit/ {print $3}' )
+****** Apply specfic stash commit (for example a dangling one)
+       git stash apply d6370a7adc55cf506894cc3ae78011353de4b46a
+***** git svn
+****** Get all core + branches (don't use local, can't figure out to have a local working install)
+       1-local) With local repo, copy repo to local:
+       --> rsync -avzP ldsvn01:/DEV/svnroot /home/lefebvre (a=archive/v=verbose/z=compress/P=progress)
+       2-local) Clone from local repo. In new folder make :
+       --> git svn clone -s -r 90000:HEAD file:///home/lefebvre/svnroot/core (90000 == 2,67945 années)
+       2-distant) Or clone from distant repo
+       --> git svn clone -s -r 90000:HEAD svn+ssh://ldsvn01/DEV/svnroot/core (90000 == 2,67945 années)
+       3) Get all revisions
+       --> git svn rebase
+       4) If install from local : change url with distant in .git/config file and make these steps : https://git.wiki.kernel.org/index.php/GitSvnSwitch
+       5) For each branch to create : in 'magit status' buffer do:
+       --> 'b' + 'c'
+       --> 'remotes/origin/<branch-name>'
+       --> <branch-name>
+       6) For each branch make the worktrees from trunk dir
+       --> git worktree add ../branches/<branch-name> <branch-name>
+       7) put in .git/config
+       [magit]
+         extension = svn
+       [status]
+         showUntrackedFiles = normal
+****** Branch manager
+       b puis v (sur la page de status)
+****** Basics
+       magit-svn-rebase -> faire un rebase
+       magit-svn-dcommit -> faire un commit
+****** Backport
+      -> aller sur le branch manager
+      -> aller sur la branche sur lequel on veut faire le backport
+      -> afficher les logs de la branche où il y a le commit que l'on veut backporter (appuyer sur l puis "rl" puis master~100 -> master)
+      -> cherry pick l'item
+****** Fix broken remote git not synchronized with remote svn
+       [ven. juil. 31][10:43 ][~/dev/core/trunk]
+       [lefebvre@4LM3X4J]$ e .git/refs/remotes/8.4
+       [ven. juil. 31][10:44 ][~/dev/core/trunk]
+       [lefebvre@4LM3X4J]$ git svn rebase
+       -> Changer la ref du remote git avec celle de la ref correspondant au HEAD du remote svn
+
+***** emacs
+****** magit
+******* Menus shortcuts
+        => A: cherry pick
+        => B: bisect
+******* Cherry pick for backport on other branch
+        -> sur le commit : "C"
+        -> si conflit : resoudre conflit + stage + commit + dans commit buffer faire "C-c C-b"
+******* Rebase interactive
+********* Quick infos
+         x + i (interactively)
+         => fixup : f
+         ==> fixup the commit into the previous one
+         ==> use M-p or M-n for moving the fixup commit in the list
+         => edit : e
+         ==> edit the commit. Then reset to the previous commit. Modify staged changes as you want then make 1 or more commits with it. Then make a rebase continue : r + (continue action)
+********* Details
+          status des commits dans status pop up:
+          => 'onto': commit on which rebase is done (won't be modified)
+          => 'same': indicates that commit has not been modified yet
+******* Rebase continue
+         magit-rebase-popup + -r
+******* fixup/squash
+         Make a fixup commit
+         => c (for commit menu) + f (for Fixup)
+         Make a rebase for cleaning branch and merging fixups commits with originals
+         => r (for rebase menu) + f (to autosquash)
+******* Retrieve a new branch from upstream and add it to worktree
+         f => fetch from origin (u)
+         b => create new branch downstream (n)
+         Create new directory for worktree
+         b => Checkout new worktree (w) choosing local branch and new directory (remove existing path in magit and type ../branches/<pathtobranch>)
+******* Retrieve commits from detached head after checkouting another branch
+         => l for log menu + H for reflog HEAD
+         => on commit A for cherry-pick menu + A
+******* Reflog
+         => magit-reflog + x on commit to reset
+******* log all commits that changed a specific file
+         Option --follow + =f(filename)
+****** emacs 24.5 install ubuntu
+       cd ~
+       mkdir emacs-src && cd emacs-src
+       wget http://mirror.team-cymru.org/gnu/emacs/emacs-24.4.tar.gz
+       tar xvf emacs-24.4.tar.gz
+       sudo apt-get install build-essential
+       sudo apt-get build-dep emacs24
+       cd emacs-24.4
+       ./configure
+       make
+       sudo make install
+****** Show tabs
+       C-s C-q <TAB>
+****** Lister les packages
+       M-x list-packages
+****** Tramp
+******* SSH
+        C-x C-f + revenir au '/' + 'ssh:' + '<user>@<host>' ou <aliasMachineSsh>
+******* combinations with pipes
+        'ssh' + 'sudo on remote' => ssh:ses86|sudo:root@ses86:/my/path/to/file.txt
+****** Help
+       C-h f help for function
+       C-h v help for variable
+       C-h m help for module
+       C-h k help for shortcuts
+****** Add a prefix for changing behaviour of following command
+       -> help for a function can be found with C-h f (for example C-h f + <magit status>")
+       -> help says prefix for function permits to specify directory of <magit status>
+       -> So C-u + <magit status> + <path-where-to-make-a-status>
+****** Macros
+       start defining : 'C-x ('
+       stop defining : 'C-x )'
+       exec 1 time: 'C-x e'
+       exec 25 times: 'C-u 37 C-x e'
+****** Clear all the buffer
+       C-x h + del
+****** Ediff
+       n : next diff
+       p : previous diff
+       a : use modif of 'a'
+       b : use modif of 'b'
+       ra : undo last modif made on 'a'
+       rb : undo last modif made on 'b'
+       q : quit Ediff
+****** Customization of defcustom variables
+       => M-x customize RET
+       => Select category and group
+       => Choose your option
+       => Example:
+
+       (defgroup checkbox nil
+       "Quick manipulation of textual checkboxes."
+       :group 'convenience)
+
+       (defcustom checkbox-states '("[ ]" "[x]")
+       "Checkbox states to cycle between.
+       First item will be the state for new checkboxes."
+       :group 'checkbox
+       :type '(repeat string))
+
+       Alternatively, just type M-x customize-group (name of a ':group')
+
+       => if you want to modify checkbox-states value you have to find where the group from which he belongs has been created
+       => Here 'checkbox' group has been defined in 'convenience' section of 'customize' menu
+
+****** Replace newlines
+       => M-x replace-string
+       => C-q C-j RET RET
+
+***** curl
+      Echappement des simple quotes : \u0027
+
+***** node
+    export NODE_ENV=myconfigfile
+***** gdb
+      ==> Enlarge print nbcharacters limit : set print elements number-of-elements
+      ==> conditional break: break iter.c:6 if i == 5
+***** bjam
+      get debug symbols (juste ajouter cette partie, laisser 'variant=release'): inlining=off debug-symbols=on
+***** regex
+      Negative lookahaed -> hello(?!u) -> match hello lorsque ce n'est pas suivi par un u ("hello" est matché dans "hello", "helloa" et n'est pas matché dans "hellou")
+      Positive lookahead -> hello(?=u)
+***** npm
+****** Npm get registry in config
+       npm config get registry
+****** Npm set sinopia
+       npm set registry http://ssasinopia01
+****** Npm add user for sinopia registry
+       npm adduser --registry http://ssasinopia01
+****** Npm install dependencies
+     ==> Si pas déjà fait créer un répertoire qui permettra de centraliser tous les modules "systran"
+     ==> Pour chaque module "systran" (ceux qui ds package.json du projet principal n'ont pas de version en argument)
+        --> faire un clone du module ds un dossier portant son nom au sein du répertoire les centralisant.
+        --> linker celui-ci avec les modules "systran" dont il dépend (les rajouter en suivant toutes ces étapes au préalable)
+        --> enregistrer ce module auprès de npm
+     ==> Au sein du projet principal linker avec tous les modules "systran" précédemment créés.
+
+     Commande link :
+     npm link --> permet d'enregister un module auprès de npm (un lien symbolique sera créer ds les fichiers npm pointant vers le dossier de ce module)
+     npm link (<prefix>/)<module> --> permet de linker le module actuel avec le module passé en paramètre (un lien symbolique est créer vers le module spécifié qui doit être connu de npm (soit il existe sur internet soit il a été register au préalable))
+
+***** ssh
+****** Exporter sa clé publique vers un serveur distant
+      ssh-copy-id -i ~/.ssh/id_rsa.pub cruisectrl@ssaint-vmw12
+****** Générer une passphrase pour une clé privé ssh
+      ssh-keygen -p
+***** terminator
+      cp ~/Bureau/Misc/terminator/config ~/.config/terminator/config && terminator -l July2015&
+***** wireshark
+      'sudo wireshark &' + 'fg'
+      -> Allez à options : avant dernière icône à droite + set HTTP protocol option avec ports qu'on veut voir
+      -> filtrer en mettant : tcp.port==8881
+
+***** docker
+****** infos
+******* docker data path
+        /var/lib/docker/
+****** commands
+******* get list of images available on host
+       sudo docker images
+******* run a docker image
+       sudo docker run -it <image_name>
+******* ps on running containers
+       sudo docker ps
+******* show all containers
+       sudo docker ps -a
+******* stop running container
+       sudo docker stop <container_id>
+******* remove container
+       -> 1 container
+       sudo docker rm <container_id>
+       -> Multiple containers
+       docker rm $(docker ps -a -q)
+******* remove image
+       -> 1 image
+       sudo docker rmi <image_id>
+       -> Multiple images
+       docker rmi $(docker images -q)
+******* exec bash in a running container
+       sudo docker exec -i -t <container_id> bash
+******* build from a subproject where a Dockerfile is present
+       sudo docker build -t <image_name> --build-arg PKG_VERSION=<pkg_version> .
+******* run with bash for debug
+       sudo docker run -it --entrypoint bash <image_name>
+******* copy from container to host
+       sudo docker cp 3cc6462db675:/opt/systran/translation-resource-monitor/workspace/4d313bf9-3a1d-425d-b27a-7fcaae3b071e/data/profile_57441c74dbceee010013de72.xml /home/lefebvre/docker-core-dev-other/
+***** docker-compose
+****** compose
+       dc config
+       dc build dispatcher
+       dc build --no-cache dispatcher
+       dc ps
+       dc create dispatcher
+       dc up -d dispatcher
+       dc exec dispatcher bash
+       dc logs dispatcher
+****** details
+******* environment
+        There are 3 levels of envvironment:
+        => Environment of host executing docker compose file, i-e exported variables from bash + variables defined in .env file (since docker compose 1.7.0).
+        => Environment at docker build time (like docker build args). Will be effective during docker scripts execution (Effective in Dockerfile).
+        => Environment at run time, i-e environment effective in the docker container. ("environment" + "env_file" sections in yml docker compose file).
+******* How to make a container not to exit after start
+        In compose:
+
+        ## keep container up
+        stdin_open: true
+        ## tty for docker attach, also sets env for docker exec -it
+        tty: true
+
+        In Dockerfile:
+
+        # [ENTRYPOINT] ...
+        # CMD original_command_started
+        CMD /bin/bash
+***** httpie
+****** send json file example
+       http GET localhost:9200/segments/segment/_search < query-search.json
+***** mongo
+****** get collection names
+       db.getCollectionNames()
+****** use db
+       use <db>
+****** basic find
+       db["<coll>"].find()
+***** systemctl
+****** start package
+       systemctl start systran-corpus-manager2.service
+****** status package
+       systemctl status -l systran-corpus-manager2.service
+***** yum
+****** install specific version for a package
+       sudo yum install systran-corpus-manager-8.10.8-0.el7
+****** remove package
+       yum remove systran-corpus-manager
+****** list all versions for a specific package
+       yum --showduplicates list systran-corpus-manager | expand
+****** update packages prfixés par systran
+       yum update systran*
+****** clean commands
+     Use this for systran repos
+     sudo yum -v clean expire-cache
+
+
+     The following are the ways which you can invoke yum in clean mode. Note
+     that "all files" in the commands below means "all files in currently
+     enabled repositories". If you want to also clean any (temporarily)
+     disabled repositories you need to use --enablerepo='*' option.
+
+     yum clean expire-cache
+     Eliminate the local data saying when the metadata and mir‐
+     rorlists were downloaded for each repo. This means yum will
+     revalidate the cache for each repo. next time it is used. How‐
+     ever if the cache is still valid, nothing significant was
+     deleted.
+
+     yum clean packages
+     Eliminate any cached packages from the system. Note that pack‐
+     ages are not automatically deleted after they are downloaded.
+
+     yum clean headers
+     Eliminate all of the header files, which old versions of yum
+     used for dependency resolution.
+
+     yum clean metadata
+     Eliminate all of the files which yum uses to determine the
+     remote availability of packages. Using this option will force
+     yum to download all the metadata the next time it is run.
+
+     yum clean dbcache
+     Eliminate the sqlite cache used for faster access to metadata.
+     Using this option will force yum to download the sqlite metadata
+     the next time it is run, or recreate the sqlite metadata if
+     using an older repo.
+
+     yum clean rpmdb
+     Eliminate any cached data from the local rpmdb.
+
+     yum clean plugins
+Tell any enabled plugins to eliminate their cached data.
+
+***** benchmarking + Perfs issues
+****** valgrind
+******* recognizing tcmalloc
+        --soname-synonyms=somalloc=*tcmalloc***
+******* tc_malloc causing valgrind not working
+        export LD_PRELOAD=/lib/x86_64-linux-gnu/libc.so.6
+******* memcheck
+       --log-file=valgrind.memcheck.$$.log
+       valgrind --fullpath-after= --leak-check=full --num-callers=50 --db-attach=yes
+******* valgrind --leak-check=full --num-callers=50 --xml=yes --xml-file=valgrind.memcheck.$RANDOM.xml --suppressions=/home/riccardi/git/core-tmp/tools/valgrind/stl.supp
+******* valkyrie -l valgrind.memcheck.$RANDOM.xml
+******* ~/scripts/valgrind-filter.sh valgrind.memcheck.$RANDOM.xml
+       filter out wrong "maybe leak" reports on std::string
+******* valgrind --tool=memcheck --vgdb=yes --vgdb-error=0
+       #optional --track-origins=yes
+       gdb /path/to/bin
+       target remote | vgdb
+       monitor help
+       monitor make_memory undefined 0x18c
+******* examples
+       valgrind --soname-synonyms=somalloc=*tcmalloc** --leak-check=full --num-callers=50 --xml=yes --xml-file=valgrind.memcheck.$RANDOM.xml --suppressions=/home/lefebvre/dev/git/bisect/core/trunk/tools/valgrind/stl.supp ./SystranFilterEngine --set filter_root=/home/lefebvre/resources/filter --lid-ldk-model /home/lefebvre/resources/lid_filter_dict/model.json --prefetch-size 100 --broker amqp://systran:SESpassword@4LM3X4J:5672 --queue-name 718ce0b3-0f2e-456e-a737-c1791b408e5c --set saas_timeout=600 --log-level TRACE
+       valkyrie -l valgrind.memcheck.<random-id>.xml
+****** callgrind
+******** cg
+        alias cg='valgrind --tool=callgrind'
+        --callgrind-out-file=
+******** callgrind_control -z <pid>
+******** callgrind_control -k <pid>
+******** kcachegrind <outfile>
+****** hellgrind
+******* valgrind --tool=helgrind --xml=yes --xml-file=valgrind.helgrind.xml
+****** massif
+******* valgrind --tool=massif --max-snapshots=1000 --threshold=0.1
+******* dump
+        /usr/local/lib/valgrind/../../bin/vgdb detailed_snapshot $PWD/massif.out
+******* massif-visualizer
+****** vgdb
+       http://valgrind.org/docs/manual/manual-core-adv.html
+******* base
+        http://valgrind.org/docs/manual/manual-core-adv.html#manual-core-adv.gdbserver-gdb
+        valgrind --tool=memcheck --vgdb=yes --vgdb-error=0 ./prog
+        # then
+        gdb ./prog
+        (gdb) target remote | vgdb
+        # or
+        /usr/local/lib/valgrind/../../bin/vgdb --pid=12055 -c detailed_snapshot massif.manual_test2.rq0
+******* for different users (www-data & root) (dispatcher ses8)
+        cd /var/www/fcgi
+        # for dispatcher first adapt SystranTranslationDispatcher-valgrind-vgdb and symlink and restart apache
+        # prepare vgdb
+        cp /usr/bin/vgdb .
+        sudo chown www-data: vgdb
+        sudo chmod u+s vgdb
+        sudo chmod g+s vgdb
+
+        # run gdb & attach
+        sudo -s
+        chmod a+rw /tmp/vgdb*
+        export LOGNAME="???"
+        export HOST="???"
+        gdb /var/www/fcgi/SystranTranslationDispatcher-8.1.0-release
+        # check apache logs: tail /var/log/apache2/error.log: pid changes; *don't* use /usr/lib/.../vgdb: use /var/www/fcgi/vgdb
+        target remote | /var/www/fcgi/vgdb --pid=31586 --max-invoke-ms=0
+        # see http://sourceforge.net/p/valgrind/mailman/valgrind-users/thread/1334476260.2205.21.camel@soleil/
+        # (copy) http://comments.gmane.org/gmane.comp.debugging.valgrind/12096
+****** ab
+       ab -r -n 100000 -c 256 -p match.input 'http://192.168.70.121:8881/entry/match?src_lang=FR&tgt_lang=EN'
+****** wrk
+       wrk -c256 -t1 -d5h --timeout 10m -s gdict-insert-wrk-from-dict.lua http://localhost:8881/
+**** misc
+***** GNU Linux / Unix various informations
+    => Unix (système d'exploitation): Kenneth thompson
+    => Linux (créer ensuite, version libre totalement réécrite du noyau unix): Linus Torwald
+    => GNU (ensembles d'utilitaires libres fonctionnant sous unix): Richard Staalman
+    => GNU/Linux (Système d'exploitation complet avec Noyau linux + Utilitaires libres)
+***** ubuntu : system general infos
+****** environment variables
+     see https://help.ubuntu.com/community/EnvironmentVariables#Session-wide_environment_variables
+     => Different levels
+     User (dans le home)
+       .profile (shell script)
+       .pam_environment (only env vars)
+     System
+       /etc/environment
+       /etc/profile.d/*.sh
+****** Various folders inside home
+     => .dbus (for dbus-monitor cache)
+     User specific datas in fixed directories (new specification for avoiding programs to spread user datas in home directly)
+       => .cache (for cache of various applications)
+       => .local/share for sharing files between user and programs
+       => .config (.emacs... shoud be here)
+     Dossiers et fichiers spécifiques à Gnome
+       => .gnome .gvfs
+****** environnement graphique sous ubuntu
+     => Gnome: environement bureautique graphique sous GNU/Linux et Unix
+     => Unity: variante d'interface graphique Gnome
+     => Compiz: gestionnaire de fenêtres (utilisé par Unity)
+     => serveur X
+****** gestionaire de fichiers
+     Logiciel  fournissant une interface utilisateur pour travailler avec des fichiers
+     => sur ubuntu par défaut nautilus
+***** memory explanations
+      VIRT: Taille total prise par le processus en mémoire virtuelle (Code+Heap+Stack+StaticDatas)
+      RES: Taille prise réellement par le processus sur la mémoire physique
+
+      => Lors d'un appel à malloc, de la mémoire sur l'espace d'adressage virtuel correspondant au Heap est allouée
+      et un mapping (sur la table des pages) doit être créé mais les pages ne sont pas encore réellement allouée en RAM.
+      Celles-ci sont allouées lorsque l'espace correspondant est utilisé.
+      Exemple:
+      char *buf = (char *)malloc(1000);
+      => VIRT += 1Ko => RES ne change pas
+      for (int i = 0; i < 1000; i++)
+      buf[i] = 'a';
+      => VIRT ne change pas => RES += 1 Ko
+** Cross-platform
+*** C++
+**** DLL_EXPORT et DLL_IMPORT
+      Certaines fonctions et variables sont chargées dynamiquement à partir des dll.
+      L'idée est que lorsque l'on est dans le module concerné il faut exporter la fonction pour qu'elle puisse être définie dans la dll et lorsque l'on est dans un module externe il faut importer les variables définies au sein de la dll (uniquement les variables car l'on est susceptibles de modifier une zone mémoire directement sur la dll).
+      Il faut donc utiliser :
+      DLLEXPORT_IMPORT pour les variables (car on veut les exportées ET les importées).
+      DLL_EXPORT pour les fonctions.
+**** inline
+     => jalf answer
+     http://stackoverflow.com/questions/5057021/why-are-c-inline-functions-in-the-header
+**** runtime_error : why there are no move constructor
+     http://stackoverflow.com/questions/28013615/move-constructor-for-stdruntime-error
+     => Lorsque une copie d'une exception survient cette copie ne doit jamais levé elle même une exception.
+     => Du coup les membres internes ne doivent jamais pouvoir lever une exception à la construction.
+     => Une 'immutable reference-counted string' doit donc être stockée en interne et non pas une std::string qui elle peut levée une exception étant donné étant donné la nouvelle optimisation SSO pour les petites string en c++11.
+     => Et move 'immutable reference-counted string' => std::string ne peut jamais être fait de manière optimisée (une copie doit être faite dans tous les cas)
+**** Distinguish between () and {}
+***** narrowing conversions
+      Args in parenthesis may be automatically converted to bind the correct overload and with braces conversion cannot be done resulting in conversion error.
+      Best to use braces in order to avoid automatic conversions.
+***** most vexing parse
+      Widget w1{}; // use default constructor
+      Widget w2(); // parsed as a function declaration and not an object construction
+      Best to use braces for that.
+**** noexcept
+     Certaines opérations (réallocations) sur des containers utilisent les opérations de move de l'objet si ce move est noexcept sinon la copie.
+     => Donc les move opérations sont intéressants en "noexcept" + autres (voir scott things to remember).
+     Eviter de passer des fonctions noexcept si elles contiennent des appels de fonctions qui ne sont pas noexcept. Typiquement des APIs de 3rd party comme boost en C++ qui n'ont pas de noexcept (ça veut dire que ces fonctions ne sont pas pensées comme noexcept de manière intrinsèque contrairement à d'autres)
+     Conclusion: 2 règles
+     => Peut-être que le plus simple est que dès qu'il y a un doute avec une librairie externe qui ne spécifie pas de noexcept, il ne faut pas le mettre
+     => Les opérations de 'move' (constructor et copy assignment), 'swap' impliquent rarement des librairies externes et sont suffisamment simple pour être passé noexcept.
+**** emplacement functions
+     ==> Generally it's better to use emplacement functions because it avoids passing by a temporary object creation.
+     => For example when you pass to push_back arguments of one of the non explicit constructor of the type held by the container, a temporary object is created and then move construction is called from that temporary.
+
+     ==> Sometimes emplacement behaves similarly as insertion.
+     => When we pass a reference of an object of the same kind that the one held by the container.
+     No temporary need to be created in that case.
+     => When no creation of a new element in the container occured
+     It occurs on non node based containers (so std::vector, std::deque, std::string) when insertion is done in an other place than the end.
+     In these cases, move/copy assignment operator is used because an existing object already constructed is used to get the new value, and in this case a temporary object needs to be created for being given in parameter to this assignment operators.
+
+     ==> And sometimes, it can be less efficient !!
+     => When using containers checking duplicates. A temporary needs to be created for duplication checks. Efficiency should be the same but weirdly emplace functions apears to create more often temporarys than regular insertion functions
+
+     ==> Sometimes it can be dangerous to use emplacement and it's better to use insertion (special cases)
+     => When 'new' are involved in the arguments, and resource management is delayed further.
+**** links
+     http://www.drdobbs.com/sutters-mill-constructor-failures-or-the/184401316
+     https://www.securecoding.cert.org/confluence/pages/viewpage.action?pageId=637
+*** cmake
+**** Compilation classique
+     cmake -DDIR3PARTY=/home/lefebvre/dev/3rdParty ..
+**** Compilation 32bits
+     cmake -DDIR3PARTY=/home/lefebvre/dev/3rdParty -DM64=0 ..
+**** Compilation release (default is debug)
+     cmake -DDIR3PARTY=/home/lefebvre/dev/3rdParty -DCMAKE_BUILD_TYPE=Release ..
+**** target_include_directories
+     https://cmake.org/cmake/help/v3.0/command/target_include_directories.html
+     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+     $<INSTALL_INTERFACE:include>
+     => If include directories are declared as PUBLIC/INTERFACE (i-e exposed for consumer of current target) and the consumer link with this target, the path of include directory depends on where the target is located (from install dir or from build path).
+     = >https://cmake.org/cmake/help/v3.3/manual/cmake-generator-expressions.7.html
+**** options and defines
+     Options may be set as follow:
+     => option(MY_OPTION "<description>" <ON/OFF>)
+     An option is just a definition at cmake level, for adding a definition at copile time something like this has to be added:
+     => if(MY_OPTION)
+     =>   add_definitions(-DMY_DEFINITION)
+     Then in the code, current macro will be defined: MY_DEFINITION.
+     In tools dir update_definitions macro permits to add definitions from option.
+*** rabbitmq
+**** Dead-letter
+     Messages rejetés (Negative Acknowledgment, TTL expired ou queue lengnth limit exceeded).
+
+     Pour notre archi RPC de connector:
+     Request queue déclare que les messages dead letter doivent être envoyés sur l'exchange de type amq.match (qui match les messages en fonction de )
+**** Redelivered
+     messages qui n'ont pas été Acknowledged (positivement ou négativement) par le consumer et qui sont redelivered par la queue.
+     Typiquement, la queue délivre X messages à un consumer (X étant le prefetch limit). Et un message poison
+     fait crasher le consumer qui perd les X messages. Seul le message poison est a bannir mais on ne sait pas lequel des X c'est.
+     Du coup le max_retry permet de donner une chances au X-1 bons messages de ne pas se faire rejected.
+     Plus max_retry est élevé et moins le prefetch size l'est plus il y a de chances que le message poison se fasse rejeter seul au
+     bout d'un certain nombre d'essais.
+*** Golang
+    => Install remote package
+    go get github.com/MyComp/MyPackage
+    => Build package with main
+    go build
+
+*** Google search engine
+    => Search on a specific web site
+    "your_string_to_search" site::https://github.com
+*** elasticsearch
+**** elasticsearch
+***** doc url
+      https://www.elastic.co/guide/en/elasticsearch/reference/current/index.html
+***** API indices
+      https://www.elastic.co/guide/en/elasticsearch/reference/current/indices.html
+      Ex: get all indices: http GET localhost:9200/*
+***** Notes
+****** General
+      Terminology:
+      => inverted index are immutable (doesn't change)
+      => 1 segment = 1 inverted index
+      => 1 Lucene index = 1 shard elasticsearch = Plusieurs segments + commit point (file that lists all known segments)
+      => 1 Elasticsearch index = Plusieurs shards
+
+      Delete/Update/add
+      => deleting a document add the id to a .del file but don't change inverted index. (Further searches search the inverted indices removing match in .del file)
+      => updating a document add the id to a .del file and new version of doc is indexed in a new segment
+      => Indexing process :
+      ==> indexing a new document add the doc to the In-memory buffer.
+      ==> Sometimes a commit process begin:
+      ===> new seg is written to disk with buff content + new commit point file written.
+      ===> Then disk is fsynced flushing to disk.
+      ===> New seg is then open making docs it contains visible to search
+      ===> In memory buff cleared. Ready to accepts new docs.
+
+      Refresh = Lightweight commit = Make docs available to search without fsync step (expensive)
+      => /_refresh allows to make lightweight commits.
+
+      Refreshing may be disabled for increasing index spead and re-enabled after dinamically !!
+
+      Flushing = commit
+      => /_flush?wait_for_ongoing
+
+      Translog helps persistence (translog is a file with all operations that have not been commited yet)
+      => At startup, translog operations are replayed
+
+      Merging process
+      => merge smalls segments in bigger ones (improve future searches)
+
+      Tune values :
+      => disable refresh for imports where search is not needed since the end ! (If no refresh is done, indexed docs are not added to a seg and not searchable since buff limit is reached)
+      => disable merge throttle if no search are done (merge IOs operations maybe significants and search requests may be really slow during these IOs)
+      => increase translog buffer size from 512Mo to 1Go to flush less often
+****** Match relevance / score / rescoring
+******* Score is combination of 3 main factors for each term (summed)
+        => TF (term frequency in field) * IDF (Inverse document frequency) * FieldNorm (more there are terms in the fields, less relevant are matched terms in it)
+        NB: For a same term in a same field, IDF may vary if ES is distributed on multiple shards.
+            IDF is computed on each shard for performance reasons. So a term may be a little bit more rare in a shard that in an another one.
+******* function_score
+        Compute a 'script' for having a boost value to multiply/add/... to combine with previous query score (combined with (sum of score(term)))
+        => a new score is computed for each matching value of the query. For perfs look at rescore section.
+******* rescore
+        Permits to compute a chain of multiple queries where matching values will be rescored with a script or other. Only the top K of previous query/rescoring may be selected for performance reasons.
+        => Queries + rescore queries are sent to each shards.
+           'window_size' permits at each 'rescore query' level to select just the top K matches of previous query/rescore on EACH shard. 'window_size' take the value of 'size' (nb results returned) if smaller.
+****** Source filtering
+       see /home/lefebvre/Work/Tasks/elasticsearch-improvements-tests-highlights-05-04-17/search-source-filtering.json
+       http localhost:9200/cm.es2.namespace.concordancer/segment/_search < search-source-filtering.json
+       https://www.elastic.co/guide/en/elasticsearch/reference/current/search-request-source-filtering.html
+****** Term vectors
+       https://www.elastic.co/guide/en/elasticsearch/reference/2.3/docs-termvectors.html
+       => Get stats about terms on certain fields for a specific document
+****** Highlighting
+       http localhost:9200/cm.es2.namespace.concordancer/segment/_search < search-highlight.json
+**** logstash
+**** filebeat
+     => fichier de conf filebeat : /etc/filebeat
+     => ajouter le template filebeat comportant mapping + options pour l
+**** kibana
+**** elasticsearch for CorpusManager
+***** update requests
+      http POST localhost:9200/segments/segment/AVOjYW1FSq2PwvP_srSR/_update < ~/Bureau/Work/Tasks/elasticsearch-CorpusManager/query-update.json
+      For this request to work, these options have to be added to the config file (/etc/elasticsearch/elasticsearch.yml):
+      script.inline: on
+      script.indexed: on
+***** search requests
+      http GET localhost:9200/segments/segment/_search < ~/Bureau/Work/Tasks/elasticsearch-CorpusManager/query-search.json
+***** delete a whole index
+      http DELETE localhost:9200/segments
+***** Différence es1 et es2
+****** es1
+       kesako ? C'est un mapping de données avec custom analyzer d'elasticsearch (tokenization...) propre à chaque langue.
+       Plus adapté quand il s'agit de faire des recherches simples de texte. Elastic sait nativement très bien géré ça.
+****** es2
+       kesako ? C'est un mapping de données avec aucune analyse de texte faite par elasticsearch ('whitespace_tokenizer' la tokenization d'elastic est effectuée en se basant sur les espaces, donc aucune analyse)
+       Dans le contexte de concordancier, on utilise le service d'alignement qui lui a été entrainé sur des phrases tokenizées par Systran.
+       Du coup pour que l'alignement puisse fonctionner correctement, l'analyse des phrases côté corpus manager 2 doit être faite de la même manière, c'est à dire en utilisant le tokenizer Systran.
+***** Improvements
+      Import process
+      => for improve indexation rate, refresh interval may be disabled (making elastic segments not searchable).
+      => But do we want a corpus to be not searchable since all docs have not been indexed or do we want to search even if all is not indexed yet ?
+      Not deferred operations
+      => a 200 OK is returned even if the request has fail doing an operation on ES. A log_error is just written.
+      => if mongo ope or ES ope failed, we can return an error but an error means you can retry because it has fails and if you retry but one of the two
+         operation has succeed this may cause other errors (not found segment for example if suppression in mongo succeeded). If an operation fail it would
+         be nice to have some kind of rollback to the state before.
+**** Snapshots & restore
+***** Snapshot
+      Add the repo path for snapshots to the config file elasticsearch.yml:
+       >> path.repo: ["/home/lefebvre/backups"]
+      elasticsearch user must have write access on the repo defined in elasticsearch.yml config file.
+      To test that:
+       >> sudo -u elasticsearch touch /path/to/folder/defined/in/config/foo
+      If permission denied change group owner for this folder to 'elasticsearch':
+       >> sudo chown -R elasticsearch:elasticsearch /path/to/folder/defined/in/config/foo
+       (>> sudo chgrp -R elasticsearch /path/to/folder/defined/in/config/foo)
+      Then make request for created repo:
+       >> http PUT localhost:9200/_snapshot/<name-you-choose-for-backup> < register-fs-repo.json
+      Make a snapshot:
+       >> http PUT localhost:9200/_snapshot/<name-you-choose-for-backup>/<name-you-choose-for-snapshot> < snapshot.json
+      You can monitor snapshot evolution with:
+       >> http GET localhost:9200/_snapshot/<name-you-choose-for-backup>/<name-you-choose-for-snapshot>
+***** Restore
+      If you restore from another computer add a repo like in the beginning of the 'snapshot' part
+      Then make request for restore from backup:
+       >> http POST localhost:9200/_snapshot/<name-you-choose-for-backup>/<name-you-choose-for-snapshot>/_restore
+      Then you can check evolution of recovering on every shards with this API (stage has to be 'done' for every shard)
+       >> http GET localhost:9200/_cat/recovery?v
+      Then normally new index should not be anymore in 'red' but 'yellow' or 'green'
+       >> http GET localhost:9200/_cat/indices?v
+
+* job infos
+** SYSTRAN
+*** Requêtes curl/HTTPie utiles
+**** TRM
+    STATUS TRM : curl 'http://localhost:8888/status'
+    STOP TR à tout prix : curl 'http://localhost:8888/ensure/stop/1250d2fc-a1a6-4fff-b737-e2334d75e158'
+    START TR à tout prix : curl 'http://localhost:8888/ensure/start/1250d2fc-a1a6-4fff-b737-e2334d75e158/1' --data-binary '{"dependencies": {"3rdParty": "e3b0d50b-bf6c-4ac5-aa0d-fdfa01a6d2f5","Common": "fd0af138-f85a-4416-b529-897484089d8e","LingResource_enko": "72e5db98-4e71-4716-bab9-846c851b5435"},"options": {}}'
+**** Gateway lookup + translate + platform divers
+    curl 'localhost:8903/lookup?key=de1e04bb-52d5-4629-a363-e8f354aa4f05&source=en&target=fr&input=dog'
+    http -v GET localhost:8903/translate key=4414f66a-a0de-4058-abf5-cb668262852f profile=1 source==en target==fr input=='this is a black dog'
+    http localhost:8903/ldk/segmentation/segments key=4414f66a-a0de-4058-abf5-cb668262852f profile=0 input=='<html>this is a very goog <b>rice</b>. It costs 4€ in France for each pound of it.' lang='en'
+**** Routing Server
+    http localhost:9999/routes/add/queue < /home/lefebvre/Work/Tasks/tr_8.5_8.8_perf_issue/add-queue-tr-ste.json
+    http localhost:9999/routes/add/queue < /home/lefebvre/Work/Tasks/tr_8.5_8.8_perf_issue/add-queue-tr-filter.json
+    http centos4lm3x4j:9999/routes/add/queue queueName="a431e6ef-0ff5-47d7-a9d2-45866aa3c69b" serviceName="Translate_en_fr" profileId=4 accountId="5391ed4581d7425151dde197"
+    http centos4lm3x4j:9999/routes/delete/queue serviceName="Translate_en_fr" profileId=4 accountId="5391ed4581d7425151dde197"
+**** Dispatcher translate file
+    curl http://localhost:8879/5391ed4581d7425151dde197/0/0/translate/file/enfr/1 --data-binary @$HOME/Bureau/Work/Tasks/DispatcherLoadTests/corpus-enx10.txt > corpus-enx10-fr-trad.txt
+    Avec routes V2
+    http localhost:8887/5391ed4581d7425151dde197/0/0/translate/file/ruen/9a55c076-0732-4b6c-9c38-65705637c603 serviceName=="Translate_ru_en" < test-ru-input
+**** Service integrator
+    -> translate file pptx
+    http localhost:8905/translate key==1 source==en target==fr profile==0 format==application/vnd.openxmlformats rawBody==true @C:\Users\visualstudio2013\Desktop\Hello.pptx
+**** TranslationEngine rest
+    -> options.txt contenant un json d'options (format...). Par exemple: {"source_format":"application/vnd.openxmlformats"}
+    http --form localhost:57416/translate options@C:\Users\visualstudio2013\Desktop\options.txt input@C:\Users\visualstudio2013\Desktop\Hello.pptx
+*** Routing server + Broker + Dispatcher (fonctionnement)
+**** Pour faire simple
+***** Connector avec driver rabbit
+****** client
+       le driver côté client est composé d'un ioService avec un nombre X de threads tournant dessus pour produce des messages via rabbit.
+       Et il est composé d'un nombre X de consumers pour recevoir les réponses.
+****** serveur
+       le driver côté serveur est composé d'un nombre X de consumers pour recevoir les requêtes.
+***** Dispatcher
+     Une requête est envoyée sur le serveur http dispatcher pour accéder à un service en particulier (translate/align...)
+     Ce serveur contient un driver. En l'occurence ce driver est toujours rabbit aujourd'hui (sinon ça perd son intéret). Et il y a plusieurs connector::clients initialisés avec ce driver (que l'on appelle Dispatchers dans le code su dispatcher: _td, _ad...)
+     Et en fonction de la requête reçue par le server le dispatcher correspondant au service est appelé.
+     Le dispacther demande au routeur les informations de la queue rabbit pour ce service là.
+     Le dispacther envoie la requête via connector client qui produce un message via rabbit.
+     Le serveur connector (les TRs) est initialisé en serveur rabbit (serveur de threads consumers rabbit)
+     Le dispatcher renvoie la réponse au client une fois reçue du
+**** Création d'un nouveau serveur consommateur de queue rabbit
+     Un serveur en mode connector peut consommer sur une queue rabbit qui lui est spécifiée au lancement (queueName).
+     Si cette queue n'exite pas encore, elle sera créée.
+     Au niveau du dispatcher, on peut interroger le routing server pour obtenir les informations sur la queue sur laquelle on veut faire une requête (queueName + options).
+     Pour identifier un id de queue unique (route) il faut 3 éléments -> profileId, serviceName et accountId (optionel).
+     Donc pour utiliser un nouveau serveur au niveau du dispatcher il faut créer une nouvelle route (http localhost:9999/routes/add/queue queueName="984babaf-952d-4c38-8eb9-89f75d861845" serviceName="Translate_en_de" profileId="Translate_enfr")
+     Pour que cette route soit accessible, il faut qu'elle soit public (public: true en db (db routes/coll routes))
+**** Routing server Généralités
+     Le routing server est constitué de 2 parties distinctes (une partie serveur rabbit et une partie serveur rest)
+     -> Partie rabbit: Au niveau du dispatcher un client RS est créer pour envoyer des requêtes via rabbit sur le RS et
+        récupérer les informations de routes qui auraient été ajoutées récemment sur le serveur. Une requête "update"
+        de polling est donc envoyée à intervalles réguliers.
+     -> Partie rest: Cette partie est utilisée en pratique par SES pour ajouter et récupérer en rest les informations de routes.
+     L'intérêt : le client SES n'ayant pas besoin de faire souvent des requêtes au RS, il est plus commode d'obtenir les informations au fur et
+     à mesure, alors que le dispatcher est beaucoup sollicité et ce serait beaucoup trop coûteux de faire une requête rest à
+     chaque fois.
+*** Explications différentes méthodes traduction
+**** SMT (STATISTICAL MACHINE TRANSLATION)
+    SMT est un modèle utilisé pour la traduction (contrairement à SPE).
+    Création du modèle SMT :
+    -> Entrainement sur des corpus pour générer un modèle statistique de traduction.
+    Traduction avec utilisation de SMT:
+    -> traductionSMT(src, modèleSMT)
+**** SPE (STATISTICAL POST EDITION)
+    SPE permet de générer un modèle qui sera utiliser lors d'un traitement d'amélioration de la traduction (générée auparavant).
+    Création du modèle SPE :
+    -> Etape 1 : Traduction rule-based.
+    -> Etape 2 : Création d'un modèle basé sur la comparaison entre le résultat de l'étape 1 et une traduction de référence (parfaite).
+    Traduction avec utilisation de SPE :
+    -> tgt = traductionRuleBased(src) || tgt = traductionSMT(src)
+    -> améliorationTraduction(tgt, modèleSPE)
+**** MOSES
+    Moses est l'outil permettant l'exploitation des modèles (SPE ou SMT) pour effectuer une traduction (la post édition avec SPE peut aussi être vue comme une traduction même si la langue est la même en entrée et en sortie).
+
+*** CorpusManager2
+**** 43665 concordancer import flow
+**** improvements
+***** 8.6.1
+****** list caractères interdits (minuscule...)
+***** 8.7
+****** Améliorations robustesse import
+       => Nouveau mode: 'mode safe sans échecs'
+       persistence = when OK is received by client, he can be sure that his corpus will be correctly imported (with all asked features)
+******* V1 (deferred (slow) | persistence safe | memory safe)
+         mode synchrone (MultiFeatures appelé à la place de DeferredFeatures)
+******* V2 (deferred (quick import) | persistence not safe | memory safe)
+         condition variable avec count du nombre de messages postés sur l'io_service pour régularisé la montée mémoire de CM
+         + suppression rabbit (qui n'a plus d'intérêt en mode non persistent vu qu'il sert pour la robustesse de perte des messages)
+         Si CM manager plante (ce qu'il risque de faie moins vu le contrôle de la mémoire avec le contrôle du nb de msg sur l'io_service)
+         les messages sur l'io_service qui n'ont pas été traités sont perdus. On arrive à un état où l'utilisateur a reçu un OK
+         et qu'il n'a pas la garantie que son corpus ait correctement été importé
+******* V3 (deferred (quick import but slower than V2) | persistence safe | memory safe) => Pas maintenant
+         Mode 'default' devient un mix du mode 'safe sans échecs' + 'default' d'avant.
+         Condition variable avec count du nombre de messages postés sur l'io_service + rabbit en mode persistent.
+         Le rajout de rabbit permet que lorsque l'on renvoit un OK à l'utilisateur, il sera sûr que son corpus sera correctement traiter un jour.
+         Also need a safe producer: heartbeats, write confirmations: need a whole new rabbitmq driver for that.
+****** Fragments TMX
+******* In segment/list API when ES1 search occured make a join with CM if format=="tmx-fragment"
+******* Clean seg (only validation part) could be done when updating/inserting an entry and if the validation is wrong we can return a 400 to the user
+**** Explanations about events managers design in CM2
+***** Basic events managers (never used directly)
+      These are events managers that directly trigger an event for a specific feature ("es1" "es2" "fuzzy" "align" "context")
+      They are never used directly because combinations of features on a corpus may vary from one to another. So MultiFeaturesManager is used.
+****** Es1FeatureManager (never used directly)
+****** Es2FeatureManager (never used directly)
+****** FuzzyFeatureManager (never used directly)
+****** AlignFeatureManager (never used directly)
+****** ContextFeatureManager (never used directly)
+***** Advanced events Manager. These are managers for handling multiple features when triggering an event.
+      For features we can see two behaviours concerning CM2 APIs.
+      APIs where the events are triggered synchronously and APIs where the events are triggered asynchronously:
+      => For APIs dealing with a limited number of segments (quick processing) we prefer to use synchronous processing. In that case, when the user receive a response he can be sure that all features have been applied.
+         A user modifying a segment will probably need features on this particular segment just after adding it, so defering is not appropriate.
+      => For APIs dealing with a lot of segments like 'import' APIs (slow pocessing), triggering events on features for each segment can take a lot of time and this work has to be done asynchronously (avoid tcp keep alive timeout).
+         For 'import' API (where tcp traffic is constant), this allows the user to start working on a corpus as soon as possible with limited actions and features on it (listing, editing it...).
+         For being able to know if the deferred events have been processed or not, a status of deferred events has been added and can be accessible through corpus infos APIs (/list and /details)
+****** For APIs dealing with limited number of segments
+******* MultiFeaturesManager (always used)
+******* DeferedFeaturesManager (never used directly for now)
+        Never used directly for now because async is not appropriate with limited number of segments
+****** For APIs dealing with all segments of a segmentSet
+******* BatchManager (always used)
+        Two modes: sync one (not used for now) and async one (always used for now).
+        This manager has to be used if an event is triggered multiple times on multiple segments. Prepare a batch of multiple segments and when enough have been gathered triggers a new event via MultiFeaturesManager (sync) or DeferedFeaturesManager (async).
+        A batch implies that an event is triggered for some features on each segment of a corpus. In that case the status for this feature is 'pending' otherwise it's 'ok'.
+        A batch with deferred events show a progression in addition to the status.
+**** Explanation of features status at segSet or corpus level
+***** no "featureName" object means that the feature is not available for this corpus.
+***** a "featureName" object is present means that the corpus support or will support this feature.
+      In that case there are two different states determined by the "featureName.status" string
+****** a "featureName.status" field as "processing" means that the feature is not fully available for this corpus (an event is in progress for this feature on this corpus).
+       In that case a "featureName.processingDetails" object is present containing details about the in progress operation on the feature (progression infos + type of event (insert/delete/update))
+****** a "featureName.status" field as "ok" means that the feature is fully available for this corpus.
+**** Réunion 20/01 fonctionnement score match + autres points
+***** Question 1: fonctionnement 'search' Elasticsearch
+      => limit à défaut à 10 (mieux que seuil min non ? Car toujours des résultats)
+      => Le score de pertinence à l'air d'être calculé par rapport au nombre total de tokens (un truc du genre "score" = "token matchés"/"nb total tokens") => 'Term frequency' !!
+      Faut-il préféré une distance peu élevée par rapport à une expression donnée ?
+****** Fonctionnement 'search' ES
+       Match query (analyse des termes matchés) => ce qu'on a actuellement
+       => 'TF' (term frequency): plus une occurence d'un terme apparait dans un document, plus ce terme à un poids important.
+       => 'IDF' (inverse document frequency): plus un terme apparait dans beaucoup de document, plus son poids est faible.
+       => 'Field-length norm': plus le champ comporte de mots, moins le terme apparaissant dedans à d'importance.
+       Phrase match (match d'une phrase): on peut jouer sur la proximité des termes d'une query => ce qu'on a pas.
+       NB: Pour jouer sur le 'fuzzy' (calcul de distance des mots avec query) il faut une 'fuzzy' request ce que l'on ne fait pas actuellement. (Pas d'intéret dans notre cas)
+****** Désactiver certaines 'search' features
+       => 'TF'  Disable OK => Disable aussi les éventuelles requêtes de proximité
+       => 'IDF' Disable KO
+       => 'Field-length norm' Disable OK
+***** Question 2: process côté client ou changement 'tokenization' côté backend
+      => Les règles de highlighting (Si highlight sur une zone de moins de x caractères + si 2 mots se suivent alors on laisse en jaune l'espace)
+         Ce sont des process à faire du côté client.
+***** Question 3: field 'search' = source ou LID (dans ce cas là le sens src + tgt n'as plus d'intéret, juste le choix de la lp) ?
+      => Pour le moment c'est la 'source', à voir pour une évolution potentielle
