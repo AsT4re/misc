@@ -692,6 +692,10 @@ Tell any enabled plugins to eliminate their cached data.
 **** links
      http://www.drdobbs.com/sutters-mill-constructor-failures-or-the/184401316
      https://www.securecoding.cert.org/confluence/pages/viewpage.action?pageId=637
+**** RTTI
+     Run Time Type Information
+     => Refers to type deduction at run time.
+     For example dynamic_cast use RTTI.
 *** cmake
 **** Compilation classique
      cmake -DDIR3PARTY=/home/lefebvre/dev/3rdParty ..
