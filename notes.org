@@ -355,6 +355,15 @@
        => M-x replace-string
        => C-q C-j RET RET
 
+***** org files
+****** Promoting/Demoting
+       Promote line: Alt + ->
+       Promote section: Alt + Maj + ->
+       Demote line: Alt + <-
+       Demote section: Alt + Maj + <-
+****** Emphasis
+       => Bold: surround with *
+       => etc... (see online)
 ***** curl
       Echappement des simple quotes : \u0027
 
