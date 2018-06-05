@@ -1,6 +1,11 @@
 * general infos
 ** OS specific
 *** windows
+**** Open connection settings (WIN 10)
+     => Control panel
+     => Network & Internet
+     => Network and Sharing Center
+     => On the left: "Change adapter settings"
 **** bjam options for debug symbols and inline
      debug-symbols=on inlining=off
 **** Problèmes de path
