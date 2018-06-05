@@ -870,14 +870,6 @@ Tell any enabled plugins to eliminate their cached data.
       Then normally new index should not be anymore in 'red' but 'yellow' or 'green'
        >> http GET localhost:9200/_cat/indices?v
 
-*** perforce
-**** generalities
-     => files in Perforce repositories are write protected by default. For being able to edit them, they have to be *checkouted* (NB: VS automatically checkout the files when they are modified by user NB2: file can be changed to be modified manually without being marked as *checkouted* by perforce).
-     => *checkouted* files can be added to *changelists*. These are modifications list of files in order to be *submitted* (NB: different *changelists* cannot share different modifications on a same file)
-     => *submit* is like git push. It copies a *changelist* on remote branch.
-     => *shelves* copy remotely files of a *changelist*. Then these files can be reviewed by someone else without the need to *submit*.
-**** reconcile offline work
-     => This is kind of staging things, like adding to changelists new files that are not already remote, mark as deleted files that are not present anymore locally, files modified manually without having being checkouted...
 * job infos
 ** SYSTRAN
 *** Requêtes curl/HTTPie utiles
