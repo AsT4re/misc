@@ -40,11 +40,6 @@
      <shift> + <right click>
 **** Copy/Paste on git bash
      http://stackoverflow.com/questions/2304372/how-do-you-copy-and-paste-into-git-bash
-**** debug child processes VS
-     DEBUG > "Other Debug Targets" > "Child Process Debugging Settings"
-     Ensuite cocher "Enable child process debugging"
-     Ensuite on peut mettre des breakpoints qui seront hit par les deux process
-
 **** Switch keyboard
       Alt + Shift
 **** Add exe to startup programs
@@ -52,6 +47,13 @@
      Win + R
      => execute
      shell:startup
+**** Visual Studio
+***** debug child processes VS
+      DEBUG > "Other Debug Targets" > "Child Process Debugging Settings"
+      Ensuite cocher "Enable child process debugging"
+      Ensuite on peut mettre des breakpoints qui seront hit par les deux process
+***** break variable change
+      Go to Debug -> Add breakpoint... -> Data breakpoint
 *** unix
 **** commands
 ***** script shell
