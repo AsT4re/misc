@@ -877,6 +877,36 @@ Tell any enabled plugins to eliminate their cached data.
       Then normally new index should not be anymore in 'red' but 'yellow' or 'green'
        >> http GET localhost:9200/_cat/indices?v
 
+*** UML
+**** Visibility
+     https://laurent-audibert.developpez.com/Cours-UML/?page=diagramme-classes#L3-2-4
+     "- attribut_1:int" => "-" means private
+     "+ attribut_2:string" => "+" means public
+     "# attribut_3:int" => "#" means protected
+**** Association
+     https://laurent-audibert.developpez.com/Cours-UML/?page=diagramme-classes#L3-3-1
+     Like multiple *persons* are assiociated to one *company*
+     (How I see it: association is like each instances has references on the other)
+**** Composition
+     https://laurent-audibert.developpez.com/Cours-UML/?page=diagramme-classes#L3-3-2-a
+     Like 1 *polygon* is composed of multiple *points*
+**** Qualification
+     https://laurent-audibert.developpez.com/Cours-UML/?page=diagramme-classes#L3-3-6
+     The combination of an instance of a class with specific attributes are in relation with another class.
+     Like class Echiquier is in relation with 64 squares.
+     But Echiquier + height + column is in relation with 1 square.
+**** Association class
+     https://laurent-audibert.developpez.com/Cours-UML/?page=diagramme-classes#L3-3-7
+     Class for representing the association between two other classes.
+     !! Association class cannot exist without an instance of the two others !!
+     => Association n-aire must be used if it can exist without an instance of other classes.
+     Like Company is related to Person.
+     And the contract who link the company to the employee specify income and has an hire date.
+**** Auto association on association class
+     https://laurent-audibert.developpez.com/Cours-UML/?page=diagramme-classes#L3-3-7-c
+     Like in a specific context (showed by association class), another association can exist.
+     For example, when a persons are related to a company, in this specific context, persons can be boss of
+     other people but only in this context.
 * job infos
 ** SYSTRAN
 *** Requêtes curl/HTTPie utiles
