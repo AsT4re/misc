@@ -54,6 +54,14 @@
       Ensuite on peut mettre des breakpoints qui seront hit par les deux process
 ***** break variable change
       Go to Debug -> Add breakpoint... -> Data breakpoint
+***** VS2P4 plugin
+      This plugin read a configuration file located at the root of the workspace called "p4config.txt"
+      for connecting to perforce. If for example there are issues with modifying files, it's because
+      files are write protected by perforce and need to be checkouted for being modified and normally
+      the VS plugin checkouts automatically the files when the user try to edit them.
+      So if the files are not modifyable it's maybe because the connection cannot be established from
+      plugin to perforce so you have to check if the config is present and if the workspace and url in
+      it are well defined.
 *** unix
 **** commands
 ***** script shell
