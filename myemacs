@@ -11,13 +11,6 @@
   (add-to-list 'package-archives '("melpa" . "http://melpa.milkbox.net/packages/") t)
   )
 
-;; Configs if version is Xemacs on windows
-(if (and (boundp 'window-system) window-system)
-    (when (string-match "XEmacs" emacs-version)
-      (if (not (and (boundp 'mule-x-win-initted) mule-x-win-initted))
-          (require 'sym-lock))
-      (require 'font-lock)))
-
 ;; force c++-mode for .h files
 (add-to-list 'auto-mode-alist '("\\.h\\'" . c++-mode))
 
