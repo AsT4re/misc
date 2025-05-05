@@ -33,7 +33,7 @@
      -> /n for printing line numbers
      -> /i for case insensitive
      -> /p for ignoring files with on-printable characters
-     -> /c for using literal string with quotes
+     -> /c for using literal string with quotes 
 **** Cat on windows
      type <file>
 **** Open terminal here (right click)
