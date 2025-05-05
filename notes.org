@@ -62,6 +62,8 @@
       So if the files are not modifyable it's maybe because the connection cannot be established from
       plugin to perforce so you have to check if the config is present and if the workspace and url in
       it are well defined.
+**** Run cmd to display applications startup folder
+shell::startup
 *** unix
 **** commands
 ***** script shell
@@ -263,6 +265,8 @@
        -> Changer la ref du remote git avec celle de la ref correspondant au HEAD du remote svn
 
 ***** emacs
+****** smerge
+       C-c-^-h => help for smerge
 ****** magit
 ******* Menus shortcuts
         => A: cherry pick
@@ -335,6 +339,8 @@
        stop defining : 'C-x )'
        exec 1 time: 'C-x e'
        exec 25 times: 'C-u 37 C-x e'
+       name last macro: 'M-x name-last-kbd-macro'
+       print macro code to save to .emacs: 'M-x insert-kbd-macro'
 ****** Clear all the buffer
        C-x h + del
 ****** Ediff
@@ -720,6 +726,15 @@ Tell any enabled plugins to eliminate their cached data.
      Run Time Type Information
      => Refers to type deduction at run time.
      For example dynamic_cast use RTTI.
+**** Overload resolution
+     !!! Specialized templates is only for specializing existing template functions from 3rdParty library that canot be changed. !!!
+***** Template specialization VS function overloading
+     => Function overloading always have to be prefer except for overloading functions from already existing library where the code cannot be changed (like 3rdparty library)
+     in that case specialized templates can be the solution.
+     One exception: specialized templates does not compile  with partial specialization i-e:
+     template <typename T>
+     void f<MyType<T> >(MyType<T>) {}
+     So in this cases the only solution can be playing with ADL (Argument dependent lookup), i-e playing with namespaces.
 *** cmake
 **** Compilation classique
      cmake -DDIR3PARTY=/home/lefebvre/dev/3rdParty ..
